@@ -1,0 +1,97 @@
+<html>
+    <head>
+        <title>SimpleMonitor 0.1v</title>
+    </head>
+    <style>
+        /* Styles the table container layout */
+        table {
+            width: 100%;
+            border-collapse: collapse; /* Prevents double borders */
+            margin-top: 15px;
+        }
+        /* Styles headers and cells together */
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        /* Gives the header row a distinct look */
+        th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+        /* Simple hover effect on rows */
+        tr:hover {
+            background-color: #fafafa;
+        }
+    </style>
+    <body>
+        <p>Welcome to Simple Monitor 1.0v</p>
+        <button onclick=show_modal()>Add Request</button>
+        <dialog id="on_dialog">
+            <button onclick=close_modal()>Close</button>
+            <form method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Fetch Data</button>
+            </form>
+        </dialog>
+        <p>Output</p>
+
+        <!-- If there is data, render the table structure -->
+        {% if CR %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Website Name</th>
+                    <th>URL</th>
+                    <th>Status</th>
+                    <th>Response Time</th>
+                    <th>Last Checked</th> <!-- Added header column -->
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in CR %}
+                <tr>
+                    <td>{{ item.web_configured.web_name }}</td>
+                    <td><a href="{{ item.web_configured.url }}">{{ item.web_configured.url }}</a></td>
+                    <td>
+                        {{ item.status_code }} ({% if item.is_up %}Up{% else %}Down{% endif %})
+                    </td>
+                    <td>{{ item.response_time|floatformat:2 }} ms</td>
+                    <td>{{ item.checked_at|date:"Y-m-d H:i:s" }}</td>
+
+                    <td>
+                        <a href="{% url 'del' item.id %}">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <!-- If no data exists, fall back to the empty message -->
+            <p>Nothing yet</p>
+        {% endif %}
+        <p>Summary</p>
+        <table>
+            <thead>
+                <th>Up</th>
+                <th>Down</th>
+            </thead>
+            <tbody>
+                <td>{{ Up }}</td>
+                <td>{{ Down }}</td>
+            </tbody>
+        </table>
+        <script>
+          const modal = document.getElementById("on_dialog");
+          function show_modal(){
+            modal.showModal()
+          }
+          function close_modal(){
+            modal.close()
+          }
+        </script>
+    </body>
+</html>
